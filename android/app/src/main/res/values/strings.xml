@@ -1,0 +1,8 @@
+<resources>
+  <string name="app_name">crane-expo-2</string>
+  <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
+  <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+  <string name="facebook_app_id">671723100669761</string>
+  <string name="facebook_client_token">990a49700705afd468aa69cf0a1f8eac</string>
+  <string name="fb_login_protocol_scheme">fb671723100669761</string>
+</resources>
