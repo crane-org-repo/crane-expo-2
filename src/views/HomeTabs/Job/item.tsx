@@ -1,5 +1,5 @@
 import React from "react";
-import { Job } from "../models/Job";
+import { Job } from "../../../models/Job";
 import { Card, Icon, Text } from "@rneui/base";
 import { View } from "react-native";
 

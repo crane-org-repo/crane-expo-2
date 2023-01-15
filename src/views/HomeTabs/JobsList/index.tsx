@@ -1,13 +1,18 @@
 import React from "react";
-import JobItem from "../components/JobItem";
-import { FlatList, View } from "react-native";
-import { Job } from "../models/Job";
+import JobItem from "../Job/item";
+import { FlatList, StyleSheet, View } from "react-native";
+import { Job } from "../../../models/Job";
 import { SearchBar } from "@rneui/themed";
-import { Header } from "@rneui/base";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../constants/types";
+import { AuthContext } from "../../../store/AuthContext";
 
 const JOB_URL_LOCAL = "http://localhost:3000/jobs/";
 
-export default function JobsListScreen() {
+type jobsListProps = NativeStackScreenProps<RootStackParamList, "Jobs">;
+export default function JobsList({ navigation }: jobsListProps) {
+  const { authState, setAuthState } = React.useContext(AuthContext);
+
   const [isLoaded, setIsLoaded] = React.useState(false);
   const [error, setError] = React.useState("");
   const [query, setQuery] = React.useState("");
@@ -15,7 +20,12 @@ export default function JobsListScreen() {
 
   React.useEffect(() => {
     fetch(JOB_URL_LOCAL, {
-      mode: "cors",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + authState.accessToken,
+      },
     })
       .then((res) => res.json())
       .then(
@@ -55,13 +65,8 @@ export default function JobsListScreen() {
 
   return (
     <View>
-      <Header
-        placement="left"
-        leftComponent={{ icon: "menu", color: "#fff" }}
-        centerComponent={{ text: "Jobs", style: { color: "#fff" } }}
-        rightComponent={{ icon: "home", color: "#fff" }}
-      />
       <SearchBar
+        style={styles.searchBar}
         platform="default"
         containerStyle={{}}
         inputContainerStyle={{}}
@@ -70,7 +75,7 @@ export default function JobsListScreen() {
         rightIconContainerStyle={{}}
         loadingProps={{}}
         onChangeText={(newVal) => setQuery(newVal)}
-        placeholder="Type query here..."
+        placeholder="Find Jobs here..."
         placeholderTextColor="#888"
         value={query}
       />
@@ -82,3 +87,7 @@ export default function JobsListScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  searchBar: {},
+});

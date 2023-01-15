@@ -1,14 +1,19 @@
-import React, { Component } from "react";
-import { View, Alert, StyleSheet } from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import React from "react";
+import { View, StyleSheet } from "react-native";
 import {
   AccessToken,
   LoginButton,
   GraphRequestManager,
   GraphRequest,
 } from "react-native-fbsdk-next";
-import { AuthContext } from "../store/AuthContext";
+import { RootStackParamList } from "../../constants/types";
+import { AuthReqProps, postAuthReq } from "../../services/auth";
+import { AuthContext } from "../../store/AuthContext";
 
-export default function Login() {
+type loginProps = NativeStackScreenProps<RootStackParamList, "Login">;
+
+export default function Login({ navigation }: loginProps) {
   const { authState, setAuthState } = React.useContext(AuthContext);
 
   const handleUserInfos = (accessToken: string) => {
@@ -32,35 +37,48 @@ export default function Login() {
 
   const postData = async (user: any, token: string) => {
     try {
-      let res = await fetch("http://192.168.28.17:3000/continueWithFacebook", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          accessToken: token,
-        }),
-      }).then((res) => res.json());
-      setAuthState({ accessToken: res.accessToken, signedIn: true });
+      const authReq: AuthReqProps = {
+        email: user.email as string,
+        name: user.displayName as string,
+        uidToken: token,
+      };
+      postAuthReq(authReq).then((res) => {
+        console.log("Logged in successfully!", JSON.stringify(res));
+        setAuthState({
+          accessToken: res.accessToken,
+          signedIn: true,
+          isLoading: false,
+          isNewUser: res.newUser as boolean,
+        });
+      });
     } catch (e) {
       console.error(e);
     }
   };
 
   return (
-    <View>
+    <View
+      style={{
+        backgroundColor: "#f5f5f5",
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 15,
+      }}
+    >
       <LoginButton
-        style={styles.container}
         onLoginFinished={(error, result) => {
           if (error) {
             console.log("login has error: " + error);
           } else if (result.isCancelled) {
             console.log("login is cancelled.");
           } else {
+            setAuthState({
+              accessToken: "",
+              signedIn: false,
+              isLoading: true,
+              isNewUser: false,
+            });
             AccessToken.getCurrentAccessToken().then((data) => {
               if (data) {
                 handleUserInfos(data.accessToken.toString());
@@ -76,8 +94,10 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 3,
     padding: 24,
-    marginTop: 24,
+    marginTop: 80,
+    alignSelf: "center",
+    width: "80%",
   },
 });
